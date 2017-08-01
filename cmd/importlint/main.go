@@ -5,13 +5,12 @@
 package main
 
 import (
+	"bytes"
 	"flag"
-	"go/parser"
-	"go/token"
+	"fmt"
 	"log"
 	"os"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	importlint "github.com/zchee/go-importlint"
 )
@@ -30,12 +29,18 @@ func main() {
 		path = wd
 	}
 
-	fset := token.NewFileSet()
-	bctx := importlint.NewBuildContext(path)
-	pkgs, err := importlint.ParseDir(fset, &bctx, path, nil, parser.AllErrors)
+	bc := importlint.NewBuildContext(path)
+	pkgs, err := importlint.FindAllPackage(bc, nil, importlint.ExcludeVendor)
 	if err != nil {
-		log.Fatal(errors.Wrapf(err, "could not parse %s directly", path))
+		log.Fatal(errors.Wrapf(err, "could not find packages on %s", path))
 	}
 
-	spew.Dump(pkgs)
+	buf := new(bytes.Buffer)
+	for _, pkg := range pkgs {
+		if !pkg.IsCommand() {
+			buf.WriteString(pkg.Dir + "\n")
+		}
+	}
+
+	fmt.Print(buf.String())
 }
