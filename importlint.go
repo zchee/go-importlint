@@ -23,6 +23,7 @@ func NewBuildContext(dir string) BuildContext {
 	if root, yes := isGb(dir); yes {
 		bc.gbroot = root
 		bc.gbpaths = []string{root, filepath.Join(root, "vendor")}
+		bc.ctxt.GOPATH = root + string(filepath.ListSeparator) + filepath.Join(root, "vendor")
 		bc.ctxt.SplitPathList = bc.splitPathList
 		bc.ctxt.JoinPath = bc.joinPath
 	}
