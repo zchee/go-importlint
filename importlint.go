@@ -12,16 +12,17 @@ import (
 )
 
 type BuildContext struct {
-	ctxt *build.Context
-
-	gbroot  string
+	ctxt    *build.Context
+	root    string
 	gbpaths []string
 }
 
 func NewBuildContext(dir string) BuildContext {
 	bc := context(&build.Default)
+	bc.root = dir
+
 	if root, yes := isGb(dir); yes {
-		bc.gbroot = root
+		bc.root = root
 		bc.gbpaths = []string{root, filepath.Join(root, "vendor")}
 		bc.ctxt.GOPATH = root + string(filepath.ListSeparator) + filepath.Join(root, "vendor")
 		bc.ctxt.SplitPathList = bc.splitPathList
@@ -74,7 +75,7 @@ func FindAllPackage(bc BuildContext, ignores []string, mode FindMode) ([]*build.
 		done = make(map[string]bool)
 	)
 
-	filepath.Walk(bc.gbroot, func(path string, fi os.FileInfo, err error) error {
+	filepath.Walk(bc.root, func(path string, fi os.FileInfo, err error) error {
 		if err != nil || !fi.IsDir() {
 			return nil
 		}
@@ -85,7 +86,7 @@ func FindAllPackage(bc BuildContext, ignores []string, mode FindMode) ([]*build.
 			return filepath.SkipDir
 		}
 
-		name := filepath.ToSlash(path[len(bc.gbroot):])
+		name := filepath.ToSlash(path[len(bc.root):])
 		if done[name] {
 			return nil
 		}

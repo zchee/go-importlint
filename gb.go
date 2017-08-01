@@ -53,7 +53,7 @@ func findGbProjectRoot(path string) (string, error) {
 }
 
 func (b *BuildContext) splitPathList(list string) []string {
-	if b.gbroot != "" {
+	if b.root != "" {
 		return b.gbpaths
 	}
 	return filepath.SplitList(list)
@@ -62,11 +62,11 @@ func (b *BuildContext) splitPathList(list string) []string {
 func (b *BuildContext) joinPath(elem ...string) string {
 	res := filepath.Join(elem...)
 
-	if b.gbroot != "" {
+	if b.root != "" {
 		// Want to rewrite "$GBROOT/(vendor/)?pkg/$GOOS_$GOARCH(_)?"
 		// into "$GBROOT/pkg/$GOOS-$GOARCH(-)?".
 		// Note: gb doesn't use vendor/pkg.
-		if gbrel, err := filepath.Rel(b.gbroot, res); err == nil {
+		if gbrel, err := filepath.Rel(b.root, res); err == nil {
 			gbrel = filepath.ToSlash(gbrel)
 			gbrel, _ = match(gbrel, "vendor/")
 			if gbrel, ok := match(gbrel, fmt.Sprintf("pkg/%s_%s", b.ctxt.GOOS, b.ctxt.GOARCH)); ok {
@@ -78,7 +78,7 @@ func (b *BuildContext) joinPath(elem ...string) string {
 				}
 				gbrel = fmt.Sprintf("pkg/%s-%s/", b.ctxt.GOOS, b.ctxt.GOARCH) + gbrel
 				gbrel = filepath.FromSlash(gbrel)
-				res = filepath.Join(b.gbroot, gbrel)
+				res = filepath.Join(b.root, gbrel)
 			}
 		}
 	}
