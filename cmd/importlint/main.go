@@ -11,6 +11,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	importlint "github.com/zchee/go-importlint"
 )
@@ -30,7 +31,7 @@ func main() {
 	}
 
 	bc := importlint.NewBuildContext(path)
-	pkgs, err := importlint.FindAllPackage(bc, nil, importlint.ExcludeVendor)
+	pkgs, err := bc.FindAllPackage(nil, importlint.ExcludeVendor)
 	if err != nil {
 		log.Fatal(errors.Wrapf(err, "could not find packages on %s", path))
 	}
@@ -43,4 +44,6 @@ func main() {
 	}
 
 	fmt.Print(buf.String())
+
+	spew.Dump(bc.Context())
 }
