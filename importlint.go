@@ -69,7 +69,7 @@ const (
 // FindAllPackage returns a list of all packages in all of the GOPATH trees
 // in the given build context. If prefix is non-empty, only packages
 // whose import paths begin with prefix are returned.
-func FindAllPackage(bc BuildContext, ignores []string, mode FindMode) ([]*build.Package, error) {
+func (bc *BuildContext) FindAllPackage(ignores []string, mode FindMode) ([]*build.Package, error) {
 	var (
 		pkgs []*build.Package
 		done = make(map[string]bool)
