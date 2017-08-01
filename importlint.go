@@ -55,6 +55,10 @@ func match(s, prefix string) (string, bool) {
 	return rest, len(rest) < len(s)
 }
 
+func (b *BuildContext) Context() *build.Context {
+	return b.ctxt
+}
+
 type FindMode int
 
 const (
