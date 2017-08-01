@@ -76,7 +76,7 @@ func FindAllPackage(bc BuildContext, ignores []string, mode FindMode) ([]*build.
 
 		// avoid .foo, _foo, and testdata directory trees.
 		_, elem := filepath.Split(path)
-		if strings.HasPrefix(elem, ".") || strings.HasPrefix(elem, "_") || elem == "testdata" || (mode&ExcludeVendor != 0 && elem == "vendor") || matchIgnore(elem, ignores) {
+		if elem == "pkg" || strings.HasPrefix(elem, ".") || strings.HasPrefix(elem, "_") || elem == "testdata" || (mode&ExcludeVendor != 0 && elem == "vendor") || matchIgnore(elem, ignores) {
 			return filepath.SkipDir
 		}
 
