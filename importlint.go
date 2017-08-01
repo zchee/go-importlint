@@ -18,7 +18,9 @@ type BuildContext struct {
 }
 
 func NewBuildContext(dir string) BuildContext {
-	bc := context(&build.Default)
+	bc := BuildContext{
+		ctxt: &build.Default,
+	}
 	bc.root = dir
 
 	if root, yes := isGb(dir); yes {
@@ -28,25 +30,6 @@ func NewBuildContext(dir string) BuildContext {
 		bc.ctxt.SplitPathList = bc.splitPathList
 		bc.ctxt.JoinPath = bc.joinPath
 	}
-
-	return bc
-}
-
-func context(bctx *build.Context) BuildContext {
-	bc := BuildContext{
-		ctxt: new(build.Context),
-	}
-
-	bc.ctxt.GOARCH = bctx.GOARCH
-	bc.ctxt.GOOS = bctx.GOOS
-	bc.ctxt.GOROOT = bctx.GOROOT
-	bc.ctxt.GOPATH = bctx.GOPATH
-	bc.ctxt.CgoEnabled = bctx.CgoEnabled
-	bc.ctxt.UseAllFiles = bctx.UseAllFiles
-	bc.ctxt.Compiler = bctx.Compiler
-	bc.ctxt.BuildTags = bctx.BuildTags
-	bc.ctxt.ReleaseTags = bctx.ReleaseTags
-	bc.ctxt.InstallSuffix = bctx.InstallSuffix
 
 	return bc
 }
