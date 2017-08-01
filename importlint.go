@@ -15,16 +15,17 @@ import (
 type BuildContext struct {
 	ctxt *build.Context
 
-	gbroot string
+	gbroot  string
+	gbpaths []string
 }
 
 func NewBuildContext(dir string) BuildContext {
 	bc := context(&build.Default)
 	if root, yes := isGb(dir); yes {
 		bc.gbroot = root
-		bc.ctxt.GOPATH = root + string(filepath.ListSeparator) + filepath.Join(root, "vendor")
-		bc.ctxt.JoinPath = bc.joinPath
+		bc.gbpaths = []string{root, filepath.Join(root, "vendor")}
 		bc.ctxt.SplitPathList = bc.splitPathList
+		bc.ctxt.JoinPath = bc.joinPath
 	}
 
 	return bc
@@ -92,7 +93,7 @@ func findGbProjectRoot(path string) (string, error) {
 
 func (b *BuildContext) splitPathList(list string) []string {
 	if b.gbroot != "" {
-		return filepath.SplitList(b.ctxt.GOPATH)
+		return b.gbpaths
 	}
 	return filepath.SplitList(list)
 }
