@@ -20,8 +20,8 @@ type BuildContext struct {
 func NewBuildContext(dir string) BuildContext {
 	bc := BuildContext{
 		ctxt: &build.Default,
+		root: dir,
 	}
-	bc.root = dir
 
 	if root, yes := isGb(dir); yes {
 		bc.root = root
