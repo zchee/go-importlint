@@ -2,7 +2,7 @@ GOPATH ?= $(shell go env GOPATH)
 GO_SRCS = $(shell find . -type f -name '*.go' -and -not -iwholename '*vendor*' -and -not -iwholename '*testdata*')
 GO_VENDOR_PACKAGES = $(shell go list ./vendor/...)
 
-GO_BUILD_FLAGS := -v
+GO_BUILD_FLAGS := -v -x
 GO_BUILD_TAGS ?=
 GO_TEST_FLAGS := -v
 
@@ -18,3 +18,10 @@ bin/importlint: ${GOPATH}/pkg/darwin_amd64/github.com/zchee/go-importlint $(GO_S
 
 ${GOPATH}/pkg/darwin_amd64/github.com/zchee/go-importlint:
 	go install $(GO_BUILD_FLAGS) ./vendor/...
+
+install: ${GOPATH}/bin/importlint
+
+${GOPATH}/bin/importlint: $(GO_SRCS)
+	go install $(GO_BUILD_FLAGS) ./cmd/importlint
+
+.PHONY: build install
