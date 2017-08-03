@@ -7,6 +7,7 @@ package importlint
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -54,7 +55,7 @@ func findGbProjectRoot(path string) (string, error) {
 
 func (b *BuildContext) splitPathList(list string) []string {
 	if b.root != "" {
-		return b.gbpaths
+		return b.gopaths
 	}
 	return filepath.SplitList(list)
 }
@@ -84,4 +85,9 @@ func (b *BuildContext) joinPath(elem ...string) string {
 	}
 
 	return res
+}
+
+func match(s, prefix string) (string, bool) {
+	rest := strings.TrimPrefix(s, prefix)
+	return rest, len(rest) < len(s)
 }
