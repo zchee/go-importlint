@@ -6,6 +6,7 @@ package importlint
 
 import (
 	"os"
+	"path/filepath"
 )
 
 func isNotExist(path string) bool {
@@ -13,4 +14,8 @@ func isNotExist(path string) bool {
 		return true
 	}
 	return false
+}
+
+func srcDir(path string) string {
+	return filepath.Join(path, "src")
 }
