@@ -5,7 +5,9 @@
 package importlint
 
 import (
+	"fmt"
 	"go/ast"
+	"go/build"
 	"go/parser"
 	"go/token"
 	"os"
@@ -14,6 +16,68 @@ import (
 
 	"golang.org/x/tools/go/buildutil"
 )
+
+type FindMode int
+
+const (
+	ExcludeVendor FindMode = 1 << iota
+)
+
+// FindAllPackage returns a list of all packages in all of the GOPATH trees
+// in the given build context. If prefix is non-empty, only packages
+// whose import paths begin with prefix are returned.
+func (bc *BuildContext) FindAllPackage(ignores []string, mode FindMode) ([]*build.Package, error) {
+	pkgs := []*build.Package{}
+	done := make(map[string]bool)
+
+	filepath.Walk(bc.root, func(path string, fi os.FileInfo, err error) error {
+		if err != nil || !fi.IsDir() {
+			return nil
+		}
+
+		// avoid .foo, _foo, and testdata directory trees.
+		_, elem := filepath.Split(path)
+		if elem == "pkg" || strings.HasPrefix(elem, ".") || strings.HasPrefix(elem, "_") || elem == "testdata" || (mode&ExcludeVendor != 0 && elem == "vendor") || matchIgnore(elem, ignores) {
+			return filepath.SkipDir
+		}
+
+		name := filepath.ToSlash(path[len(bc.root):])
+		if done[name] {
+			return nil
+		}
+		done[name] = true
+
+		if path != bc.root {
+			// TODO(zchee): O(n)
+			for _, gopath := range bc.gopaths {
+				// check contains path in "src" directory
+				if strings.Contains(path, srcDir(gopath)) {
+					break
+				}
+				return filepath.SkipDir
+			}
+		}
+
+		pkg, err := bc.ctxt.ImportDir(path, build.ImportMode(0))
+		if err != nil && strings.Contains(err.Error(), "no buildable Go source files") {
+			return nil
+		}
+		pkgs = append(pkgs, pkg)
+
+		return nil
+	})
+
+	return pkgs, nil
+}
+
+func matchIgnore(elem string, ignores []string) bool {
+	for _, e := range ignores {
+		if elem == e {
+			return true
+		}
+	}
+	return false
+}
 
 // ParseDir wrapper of buildutil.ParseFile with BuildContext.
 func ParseDir(fset *token.FileSet, bctx *BuildContext, path string, filter func(os.FileInfo) bool, mode parser.Mode) (map[string]*ast.Package, error) {
@@ -51,4 +115,20 @@ func ParseDir(fset *token.FileSet, bctx *BuildContext, path string, filter func(
 	}
 
 	return pkgs, firstErr
+}
+
+func CheckDependency(pkgs map[string]*ast.Package, conf *Config) {
+	importmap := make(map[string][]string)
+
+	for name, obj := range pkgs {
+		fmt.Printf("name: %+v\n", name)
+		fmt.Printf("obj.Name: %+v\n", obj.Name)
+		if conf.Layer[name] != nil {
+			for id, file := range obj.Files {
+				for _, imppkg := range file.Imports {
+					importmap[id] = append(importmap[id], imppkg.Path.Value)
+				}
+			}
+		}
+	}
 }
