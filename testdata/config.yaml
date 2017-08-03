@@ -1,0 +1,13 @@
+project: dummy
+
+layer:
+  interfaces:
+    - application
+    - infrastructure
+  application:
+    - infrastructure
+    - domain
+  infrastructure:
+    - domain
+  domain:
+  library:
